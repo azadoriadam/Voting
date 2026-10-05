@@ -1,4 +1,4 @@
-package hu.parlament.voting;
+package hu.parlament;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

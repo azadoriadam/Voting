@@ -1,4 +1,4 @@
-package hu.parlament.voting;
+package hu.parlament;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
