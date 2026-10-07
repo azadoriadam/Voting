@@ -1,9 +1,8 @@
 package hu.parlament.votesummary;
 
-import hu.parlament.enums.producertype.ProcedureType;
-import hu.parlament.enums.producertype.ProcedureTypeConverter;
-import hu.parlament.enums.votingtype.VotingType;
-import hu.parlament.enums.votingtype.VotingTypeConverter;
+import hu.parlament.enums.ProcedureType;
+import hu.parlament.enums.VotingType;
+import hu.parlament.vote.Vote;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,9 +14,10 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@ToString
 @NamedEntityGraph(
-        name = VoteSummary.WITH_VOTES,
-        attributeNodes = @NamedAttributeNode("votes"))
+    name = VoteSummary.WITH_VOTES,
+    attributeNodes = @NamedAttributeNode("votes"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VoteSummary {
@@ -36,14 +36,14 @@ public class VoteSummary {
     private String subject;
 
     @Column(name = "voting_type", nullable = false, length = 1, comment = "Szavazás típus")
-    @Convert(converter = VotingTypeConverter.class)
+    @Enumerated(EnumType.STRING)
     private VotingType votingType;
 
     @Column(name = "procedure_type", nullable = false, length = 1, comment = "Eljárás típus")
-    @Convert(converter = ProcedureTypeConverter.class)
+    @Enumerated(EnumType.STRING)
     private ProcedureType procedureType;
 
-    @Column(comment = "Elnök neve")
+    @Column(name = "president", comment = "Elnök neve")
     private String president;
 
     @Singular
@@ -51,14 +51,4 @@ public class VoteSummary {
     @CollectionTable(name = "vote_summary_vote", joinColumns = @JoinColumn(name = "vote_summary_id"))
     private List<Vote> votes;
 
-    @Embeddable
-    public record Vote(
-
-        @Column(name = "voter_name", nullable = false, comment = "Szavazó neve")
-        String name,
-
-        @Column(name = "vote_type", nullable = false, length = 1, comment = "Szavazat")
-        VotingType voteType
-
-    ) { }
 }
