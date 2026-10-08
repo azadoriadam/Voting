@@ -49,6 +49,7 @@ public class VoteSummary {
     @Singular
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "vote_summary_id", nullable = false)
+    @ToString.Exclude
     private List<Vote> votes;
 
 }

@@ -1,6 +1,5 @@
 package hu.parlament.votesummary;
 
-import hu.parlament.votesummary.rest.response.VoteSummaryFinalIdResponse;
 import hu.parlament.votes.rest.request.VotesRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
