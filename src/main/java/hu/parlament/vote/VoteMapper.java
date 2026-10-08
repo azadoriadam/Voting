@@ -1,6 +1,7 @@
 package hu.parlament.vote;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
@@ -8,8 +9,9 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface VoteMapper {
 
-    VoteDTO toDTO(Vote entity);
-
-    Vote toEntity(VoteDTO dto);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "voterName", source = "kepviselo")
+    @Mapping(target = "voteValue", source = "szavazat")
+    Vote toEntity(VoteRequest request);
 
 }

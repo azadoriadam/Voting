@@ -6,7 +6,9 @@ import hu.parlament.vote.rest.response.VoteValueResponse;
 import hu.parlament.votesummary.VoteSummaryService;
 import hu.parlament.votesummary.rest.response.VoteSummaryFinalIdResponse;
 import hu.parlament.votes.rest.request.VotesRequest;
+import hu.parlament.votesummary.rest.response.VoteSummaryResultResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,13 +37,13 @@ public class VotesController {
     })
     @GetMapping(path = "/szavazat", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VoteValueResponse> findVote(@RequestParam(name = "szavazas", required = false) VoteValue voteValue,
-                                                      @RequestParam(name = "kepviselo", required = false) String voterName) {
+                                                      @RequestParam(name = "kepviselo", required = false)
+                                                        @Parameter(example = "Kiss Béla") String voterName) {
         ValidationBuilder.of().failIf(() -> voterName == null || voterName.isBlank(), "'kepviselo' is required").validate();
         ValidationBuilder.of().failIf(() -> voteValue == null, "'szavazas' is required").validate();
 
         return voteSummaryService.findByVoterNameAndVoteValue(voterName,voteValue);
     }
-
 
     @Operation(summary = "Szavazás rögzítése",
             description = "Rögzíti a szavazást és a szavazatokat, visszaadja a szavazás azonosítóját.")
@@ -56,5 +58,18 @@ public class VotesController {
     public ResponseEntity<VoteSummaryFinalIdResponse> voting(@RequestBody VotesRequest votesRequest) {
         voteSummaryService.validate(votesRequest);
         return voteSummaryService.handleVoting(votesRequest);
+    }
+
+    @Operation(summary = "Szavazás kiszámolás",
+            description = "A szavazás eredményének (elfogadott/elutasított) kiszámolása.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "A szavazás rögzítve"),
+            @ApiResponse(responseCode = "500", description = "Hibás kérés, semmi nem lett rögzítve",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping(path = "/eredmeny", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VoteSummaryResultResponse> result(@RequestParam(name = "szavazasId", required = false)
+                                                                @Parameter(example = "OJ01") String szavazasId) {
+        return voteSummaryService.findVoteSummaryResult(szavazasId);
     }
 }

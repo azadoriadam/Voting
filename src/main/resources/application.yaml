@@ -8,10 +8,11 @@ spring:
   h2:
     console:
       enabled: true
-  springdoc:
-    show-spring-data-rest: false
-    api-docs:
-      path: /v3/api-docs
-    swagger-ui:
-      path: /swagger-ui.html
-      operations-sorter: method
+springdoc:
+  show-spring-data-rest: false
+  paths-to-match: /szavazasok/**
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method

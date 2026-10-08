@@ -1,5 +1,6 @@
 package hu.parlament.votesummary;
 
+import hu.parlament.vote.VoteMapper;
 import hu.parlament.votes.rest.request.VotesRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -7,7 +8,8 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel =  MappingConstants.ComponentModel.SPRING,
-        unmappedTargetPolicy = ReportingPolicy.WARN)
+        unmappedTargetPolicy = ReportingPolicy.WARN,
+        uses = { VoteMapper.class })
 public interface VoteSummaryMapper {
 
     @Mapping(target = "id", ignore = true)

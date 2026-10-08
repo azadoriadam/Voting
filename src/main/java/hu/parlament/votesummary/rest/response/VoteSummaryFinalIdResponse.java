@@ -7,4 +7,8 @@ public record VoteSummaryFinalIdResponse(String szavazasId) {
     public VoteSummaryFinalIdResponse(Integer id) {
         this(id == null ? null : String.format("%s%02d", PREFIX, id));
     }
+
+    public static Integer getId(String szavazasId) {
+        return szavazasId == null ? null : Integer.valueOf(szavazasId.substring(PREFIX.length()));
+    }
 }

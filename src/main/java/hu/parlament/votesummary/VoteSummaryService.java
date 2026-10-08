@@ -2,6 +2,7 @@ package hu.parlament.votesummary;
 
 
 
+import hu.parlament.enums.VoteSummaryResult;
 import hu.parlament.enums.VoteValue;
 import hu.parlament.validation.ValidationBuilder;
 import hu.parlament.vote.Vote;
@@ -10,8 +11,10 @@ import hu.parlament.vote.VoteService;
 import hu.parlament.vote.rest.response.VoteValueResponse;
 import hu.parlament.votesummary.rest.response.VoteSummaryFinalIdResponse;
 import hu.parlament.votes.rest.request.VotesRequest;
+import hu.parlament.votesummary.rest.response.VoteSummaryResultResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -53,12 +56,64 @@ public class VoteSummaryService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
     }
 
+    @Transactional(readOnly = true)
+    private Integer countByIdAndVoteValue(Integer summaryId, VoteValue voteValue) {
+        return repository.countByIdAndVotes_VoteValue(summaryId, voteValue);
+    }
+
+    @Transactional(readOnly = true)
+    private Optional<VoteSummary> getLastNotEqualId(Integer summaryId) {
+        if (summaryId == null) {
+            return Optional.empty();
+        }
+        return repository.findFirstByIdNotOrderByIdDesc(summaryId);
+    }
+
     public ResponseEntity<VoteValueResponse> findByVoterNameAndVoteValue(String voterName, VoteValue voteValue) {
         ValidationBuilder.of().failIf(() -> voterName == null || voterName.isBlank(), "Voter name is required").validate();
         ValidationBuilder.of().failIf(() -> voteValue == null, "Vote value is required").validate();
 
         Vote vote = findVote(voterName, voteValue);
         return ResponseEntity.ok(new VoteValueResponse(vote.getVoteValue()));
+    }
+
+    public ResponseEntity<VoteSummaryResultResponse> findVoteSummaryResult(String summaryId) {
+        ValidationBuilder.of().failIf(() -> summaryId == null, "VoteSummary id is required").validate();
+        ValidationBuilder.of().failIf(() -> summaryId != null && summaryId.isBlank(), "VoteSummary id must not be blank").validate();
+
+        Integer id = VoteSummaryFinalIdResponse.getId(summaryId);
+        VoteSummary summary = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "VoteSummary not found"));
+
+        return ResponseEntity.ok(new VoteSummaryResultResponse(
+                calculateVoteResult(summary),
+                getLastVoteCountOrDefault(id,200),
+                countByIdAndVoteValue(id, VoteValue.i),
+                countByIdAndVoteValue(id, VoteValue.n),
+                countByIdAndVoteValue(id, VoteValue.t)
+        ));
+    }
+
+    public VoteSummaryResult calculateVoteResult(VoteSummary summary) {
+        if(summary == null || summary.getVotes() == null || summary.getVotes().isEmpty()) {
+            return null;
+        }
+
+        Integer summaryId = summary.getId();
+        int allVotesNumbers = summary.getVotes().size();
+        Integer iVotesNumbers = countByIdAndVoteValue(summaryId, VoteValue.i);
+        Integer lastVoteCountOrHalfMax = getLastVoteCountOrDefault(summaryId,100);
+
+        return switch (summary.getVotingType()) {
+            case j -> VoteSummaryResult.F;
+            case e -> iVotesNumbers > allVotesNumbers/2 ? VoteSummaryResult.F : VoteSummaryResult.U;
+            case m -> iVotesNumbers > lastVoteCountOrHalfMax ? VoteSummaryResult.F : VoteSummaryResult.U;
+        };
+    }
+
+    @NonNull
+    private Integer getLastVoteCountOrDefault(Integer summaryId, Integer defaultCount) {
+        return getLastNotEqualId(summaryId).map(VoteSummary::getVotes).map(List::size).orElse(defaultCount);
     }
 
     public void validate(VotesRequest request) {
@@ -95,9 +150,8 @@ public class VoteSummaryService {
             return new HashSet<>();
         }
         Set<String> seen = new HashSet<>();
-        return listGetter.apply(entity).stream().map(nameGetter).filter(name -> !seen.add(name))
+        return listGetter.apply(entity).stream().map(nameGetter).filter(Objects::nonNull).filter(name -> !seen.add(name))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
-
 
 }
