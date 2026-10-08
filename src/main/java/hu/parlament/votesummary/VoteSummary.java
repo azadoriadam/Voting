@@ -47,8 +47,8 @@ public class VoteSummary {
     private String president;
 
     @Singular
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "vote_summary_vote", joinColumns = @JoinColumn(name = "vote_summary_id"))
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "vote_summary_id", nullable = false)
     private List<Vote> votes;
 
 }

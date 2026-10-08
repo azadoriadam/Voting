@@ -2,13 +2,17 @@ package hu.parlament.votesummary;
 
 
 
+import hu.parlament.enums.VoteValue;
 import hu.parlament.validation.ValidationBuilder;
 import hu.parlament.vote.Vote;
-import hu.parlament.vote.VoteDTO;
+import hu.parlament.vote.VoteRequest;
+import hu.parlament.vote.VoteService;
+import hu.parlament.vote.rest.response.VoteValueResponse;
 import hu.parlament.votesummary.rest.response.VoteSummaryFinalIdResponse;
-import hu.parlament.voting.rest.request.VotingRequest;
+import hu.parlament.votes.rest.request.VotesRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +31,10 @@ public class VoteSummaryService {
 
     private final VoteSummaryMapper mapper;
 
-    public ResponseEntity<VoteSummaryFinalIdResponse> handleVoting(VotingRequest votingRequest) throws ResponseStatusException {
-        VoteSummary entity = mapper.toEntity(votingRequest);
+    private final VoteService voteService;
+
+    public ResponseEntity<VoteSummaryFinalIdResponse> handleVoting(VotesRequest votesRequest) throws ResponseStatusException {
+        VoteSummary entity = mapper.toEntity(votesRequest);
         Integer savedEntityId = create(entity).getId();
         return ResponseEntity.ok(new VoteSummaryFinalIdResponse(savedEntityId));
     }
@@ -41,7 +47,21 @@ public class VoteSummaryService {
         return save;
     }
 
-    public void validate(VotingRequest request) {
+    @Transactional(readOnly = true)
+    public Vote findVote(String voterName, VoteValue voteValue) {
+        return voteService.findByVoterNameAndVoteValue(voterName, voteValue)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vote not found"));
+    }
+
+    public ResponseEntity<VoteValueResponse> findByVoterNameAndVoteValue(String voterName, VoteValue voteValue) {
+        ValidationBuilder.of().failIf(() -> voterName == null || voterName.isBlank(), "Voter name is required").validate();
+        ValidationBuilder.of().failIf(() -> voteValue == null, "Vote value is required").validate();
+
+        Vote vote = findVote(voterName, voteValue);
+        return ResponseEntity.ok(new VoteValueResponse(vote.getVoteValue()));
+    }
+
+    public void validate(VotesRequest request) {
         ValidationBuilder.of(request)
             .failIf(s -> s.idopont() == null, "'idopont' is required")
             .failIf(s -> s.targy() == null, "'targy' is required")
@@ -66,8 +86,8 @@ public class VoteSummaryService {
         return getDuplicateNames(summary, VoteSummary::getVotes, Vote::getVoterName);
     }
 
-    private Set<String> getDuplicateNames(VotingRequest request) {
-       return getDuplicateNames(request, VotingRequest::szavazatok, VoteDTO::voterName);
+    private Set<String> getDuplicateNames(VotesRequest request) {
+       return getDuplicateNames(request, VotesRequest::szavazatok, VoteRequest::kepviselo);
     }
 
     private <X,Z> Set<String> getDuplicateNames(X entity, Function<X,List<Z>> listGetter, Function<Z,String> nameGetter) {
@@ -78,5 +98,6 @@ public class VoteSummaryService {
         return listGetter.apply(entity).stream().map(nameGetter).filter(name -> !seen.add(name))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
+
 
 }

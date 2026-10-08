@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Slf4j
 public final class ValidationBuilder<X> {
@@ -21,20 +23,35 @@ public final class ValidationBuilder<X> {
         return new ValidationBuilder<>(entity);
     }
 
-    public ValidationBuilder<X> failIf(Predicate<X> predicate, String message) {
-        return failIf(predicate, (e) -> message);
+    public static ValidationBuilder<Void> of() {
+        return new ValidationBuilder<>(null);
     }
 
-    public ValidationBuilder<X> failIf(Predicate<X> predicate, Function<X,String> message) {
+    public ValidationBuilder<X> failIf(Predicate<X> predicate, String message) {
+        return failIf(predicate, e -> message);
+    }
+
+    public ValidationBuilder<X> failIf(Predicate<X> predicate, Function<X, String> message) {
         if (predicate.test(entity)) {
             errors.add(message.apply(entity));
         }
         return this;
     }
 
+    public ValidationBuilder<X> failIf(BooleanSupplier condition, String message) {
+        return failIf(condition, () -> message);
+    }
+
+    public ValidationBuilder<X> failIf(BooleanSupplier condition, Supplier<String> message) {
+        if (condition.getAsBoolean()) {
+            errors.add(message.get());
+        }
+        return this;
+    }
+
     public void validate() {
         if (!errors.isEmpty()) {
-            log.error("Validation failed: {}", errors);
+            log.warn("Validation failed: {}", errors);
             throw new VoteValidationException(errors);
         }
     }
