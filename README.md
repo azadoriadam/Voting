@@ -1,14 +1,15 @@
 # Voting application
 
-### Used Spring modules
+### Elkészült feladatok
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/4.1.1/gradle-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/4.1.1/gradle-plugin/packaging-oci-image.html)
-* [Docker Compose Support](https://docs.spring.io/spring-boot/4.1.1/reference/features/dev-services.html#features.dev-services.docker-compose)
-* [Spring Web](https://docs.spring.io/spring-boot/4.1.1/reference/web/servlet.html)
-* [Rest Repositories](https://docs.spring.io/spring-boot/4.1.1/how-to/data-access.html#howto.data-access.exposing-spring-data-repositories-as-rest)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/4.1.1/reference/data/sql.html#data.sql.jpa-and-spring-data)
-* [Spring Data JDBC](https://docs.spring.io/spring-boot/4.1.1/reference/data/sql.html#data.sql.jdbc)
-* [SpringDoc OpenAPI](https://springdoc.org/)
-* [Liquibase Migration](https://docs.spring.io/spring-boot/4.1.1/how-to/data-initialization.html#howto.data-initialization.migration-tool.liquibase)
+* 1 Egy szavazás adatainak elmentése 
+* 2 Egy képviselő adott szavazáson leadott szavazatának le kérdezése
+* 3 A szavazás eredményének (elfogadott/elutasított) kiszá molása
+* 4 Adott napra a szavazások és eredményeik lekérdezése
+
+### A kivitelezéshez használandó eszközök 
+* Java verzió: 21 
+* Építő eszköz: gradle 
+* Adatbázis: H2 db 
+* REST felület: Spring Boot 
+* Adatelérés: JPA/Hibernate 
