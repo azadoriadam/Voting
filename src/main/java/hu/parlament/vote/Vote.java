@@ -1,5 +1,6 @@
 package hu.parlament.vote;
 
+import hu.parlament.common.DefaultEntity;
 import hu.parlament.enums.VoteValue;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,12 +13,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Vote {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, comment = "id")
-    private Integer id;
+public class Vote extends DefaultEntity {
 
     @Column(name = "voter_name", nullable = false, comment = "Szavazó neve")
     private String voterName;

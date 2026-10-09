@@ -1,5 +1,6 @@
 package hu.parlament.votesummary;
 
+import hu.parlament.common.DefaultEntity;
 import hu.parlament.enums.ProcedureType;
 import hu.parlament.enums.VotingType;
 import hu.parlament.vote.Vote;
@@ -20,14 +21,9 @@ import java.util.List;
     attributeNodes = @NamedAttributeNode("votes"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VoteSummary {
+public class VoteSummary extends DefaultEntity {
 
     public static final String WITH_VOTES = "VoteSummary.withVotes";
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, comment = "id")
-    private Integer id;
 
     @Column(name = "vote_date", comment = "Időpont")
     private LocalDateTime voteDate;

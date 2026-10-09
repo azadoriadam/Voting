@@ -3,6 +3,7 @@ package hu.parlament.votesummary.rest.response;
 import hu.parlament.enums.VoteSummaryResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Egy szavazás adatai")
 public record VoteSummaryResultResponse(
 
         @Schema(description = "A szavazás eredményi: F =  Elfogadott, U = Elutasított",

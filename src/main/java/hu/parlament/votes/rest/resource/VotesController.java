@@ -4,6 +4,7 @@ import hu.parlament.enums.VoteValue;
 import hu.parlament.validation.ValidationBuilder;
 import hu.parlament.vote.rest.response.VoteValueResponse;
 import hu.parlament.votesummary.VoteSummaryService;
+import hu.parlament.votesummary.rest.response.VoteSummariesResponse;
 import hu.parlament.votesummary.rest.response.VoteSummaryFinalIdResponse;
 import hu.parlament.votes.rest.request.VotesRequest;
 import hu.parlament.votesummary.rest.response.VoteSummaryResultResponse;
@@ -15,8 +16,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Tag(name = "Szavazások", description = "Szavazatok rögzítése és lekérdezése")
 @RestController
@@ -71,5 +75,20 @@ public class VotesController {
     public ResponseEntity<VoteSummaryResultResponse> result(@RequestParam(name = "szavazasId", required = false)
                                                                 @Parameter(example = "OJ01") String szavazasId) {
         return voteSummaryService.findVoteSummaryResult(szavazasId);
+    }
+
+    @Operation(summary = "Szavazás lekérdezése nap alapján",
+            description = "Listázza az összes szavazást megadott nap alapján.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Szavaztok listája"),
+            @ApiResponse(responseCode = "404", description = "Nincs találat",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "500", description = "Hibás dátum vagy semmi nem lett rögzítve",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping(path = "/napi-szavazasok", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<VoteSummariesResponse> allVotesByDay(@Parameter(description = "A nap (ISO formátum)", example = "2026-10-09")
+                                                                       @RequestParam("nap") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate nap) {
+        return voteSummaryService.findByDay(nap);
     }
 }

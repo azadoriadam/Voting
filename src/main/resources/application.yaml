@@ -8,6 +8,10 @@ spring:
   h2:
     console:
       enabled: true
+  jpa:
+    properties:
+      hibernate:
+        column_ordering_strategy: hu.parlament.common.AuditColumnsLastOrderingStrategy
 springdoc:
   show-spring-data-rest: false
   paths-to-match: /szavazasok/**
